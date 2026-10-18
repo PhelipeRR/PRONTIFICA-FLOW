@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
 import { db } from "../../../db";
 import { leadStatuses, operationalSettings, user } from "../../../db/schema";
 
 export async function GET() {
   if (!db) return NextResponse.json({ error: "Banco não configurado" }, { status: 503 });
+  await db.execute(sql`create table if not exists operational_settings (key text primary key, value text not null, updated_at timestamp not null default now(), updated_by text)`);
   const [statuses, users, settings] = await Promise.all([
     db.select().from(leadStatuses).orderBy(asc(leadStatuses.sortOrder)),
     db.select({ id: user.id, name: user.name, email: user.email, emailVerified: user.emailVerified, createdAt: user.createdAt }).from(user).orderBy(asc(user.name)),
@@ -15,6 +16,7 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   if (!db) return NextResponse.json({ error: "Banco não configurado" }, { status: 503 });
+  await db.execute(sql`create table if not exists operational_settings (key text primary key, value text not null, updated_at timestamp not null default now(), updated_by text)`);
   const body = await request.json();
   if (body.type === "status") {
     if (!body.id || !body.name?.trim()) return NextResponse.json({ error: "Status inválido" }, { status: 400 });
