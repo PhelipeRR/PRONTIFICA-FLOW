@@ -9,9 +9,9 @@ export const metadata: Metadata = {
   },
   description: "Gestão e acompanhamento comercial imobiliário.",
   icons: {
-    icon: "/prontifica-favicon.png",
-    shortcut: "/prontifica-favicon.png",
-    apple: "/prontifica-favicon.png",
+    icon: "/prontifica-favicon.svg",
+    shortcut: "/prontifica-favicon.svg",
+    apple: "/prontifica-favicon.svg",
   },
 };
 
