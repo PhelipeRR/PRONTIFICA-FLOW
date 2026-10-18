@@ -1,25 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { NextRequest,NextResponse } from "next/server";
+import { and,desc,eq,ilike,or,sql } from "drizzle-orm";
 import { db } from "../../../db";
-import { leads, leadStatuses } from "../../../db/schema";
-import { normalizePhone, normalizeText } from "../../../lib/normalization";
-
-export async function GET(request: NextRequest) {
-  if (!db) return NextResponse.json({ error: "Banco não configurado" }, { status: 503 });
-  const query = request.nextUrl.searchParams.get("q")?.trim();
-  const status = request.nextUrl.searchParams.get("status");
-  const from = request.nextUrl.searchParams.get("from");
-  const to = request.nextUrl.searchParams.get("to");
-  const filters = [query ? or(ilike(leads.clientName, `%${query}%`), ilike(leads.phone, `%${query}%`)) : undefined, status ? eq(leadStatuses.name, status) : undefined, from ? sql`${leads.contactDate} >= ${from}` : undefined, to ? sql`${leads.contactDate} <= ${to}` : undefined].filter(Boolean);
-  const rows = await db.select({ lead: leads, status: leadStatuses.name, color: leadStatuses.color }).from(leads).leftJoin(leadStatuses, eq(leads.statusId, leadStatuses.id)).where(filters.length ? and(...filters as any) : undefined).orderBy(desc(leads.contactDate)).limit(100);
-  return NextResponse.json(rows);
-}
-
-export async function POST(request: NextRequest) {
-  if (!db) return NextResponse.json({ error: "Banco não configurado" }, { status: 503 });
-  const body = await request.json();
-  const clientName = normalizeText(body.clientName);
-  if (!clientName || !body.contactDate || !body.statusId) return NextResponse.json({ error: "Nome, data e status são obrigatórios" }, { status: 400 });
-  const [created] = await db.insert(leads).values({ clientName, phone: normalizePhone(body.phone), contactDate: body.contactDate, statusId: body.statusId, brokerId: body.brokerId || null, agencyId: body.agencyId || null, notes: normalizeText(body.notes) || null, nextContact: body.nextContact || null, source: "manual" }).returning();
-  return NextResponse.json(created, { status: 201 });
-}
+import { leads,leadStatuses,user } from "../../../db/schema";
+import { auth } from "../../../lib/auth";
+import { normalizePhone,normalizeText } from "../../../lib/normalization";
+import { ensureLeadOwner } from "../../../db/ensure-lead-owner";
+void ensureLeadOwner();
+async function current(request:NextRequest){if(!auth||!db)return null;const session=await auth.api.getSession({headers:request.headers});if(!session?.user)return null;const [row]=await db.select({id:user.id,role:user.role}).from(user).where(eq(user.id,session.user.id)).limit(1);return row||null}
+export async function GET(request:NextRequest){if(!db)return NextResponse.json({error:'Banco não configurado'},{status:503});const actor=await current(request);if(!actor)return NextResponse.json({error:'Não autenticado'},{status:401});const p=request.nextUrl.searchParams,q=p.get('q')?.trim(),status=p.get('status'),from=p.get('from'),to=p.get('to'),owner=p.get('owner');const canSeeAll=actor.role==='ADMINISTRADOR'||actor.role==='GESTOR';const ownerFilter=canSeeAll?(owner&&owner!=='mine'&&owner!=='all'?eq(leads.ownerId,owner):owner==='mine'?eq(leads.ownerId,actor.id):undefined):eq(leads.ownerId,actor.id);const filters=[ownerFilter,q?or(ilike(leads.clientName,`%${q}%`),ilike(leads.phone,`%${q}%`)):undefined,status?eq(leadStatuses.name,status):undefined,from?sql`${leads.contactDate} >= ${from}`:undefined,to?sql`${leads.contactDate} <= ${to}`:undefined].filter(Boolean);const rows=await db.select({lead:leads,status:leadStatuses.name,color:leadStatuses.color}).from(leads).leftJoin(leadStatuses,eq(leads.statusId,leadStatuses.id)).where(filters.length?and(...filters as any):undefined).orderBy(desc(leads.contactDate)).limit(100);return NextResponse.json(rows,{headers:{'X-Can-See-All':String(canSeeAll),'X-Owner-Id':actor.id}})}
+export async function POST(request:NextRequest){if(!db)return NextResponse.json({error:'Banco não configurado'},{status:503});const actor=await current(request);if(!actor)return NextResponse.json({error:'Não autenticado'},{status:401});const body=await request.json(),clientName=normalizeText(body.clientName);if(!clientName||!body.contactDate||!body.statusId)return NextResponse.json({error:'Nome, data e status são obrigatórios'},{status:400});const canAssign=actor.role==='ADMINISTRADOR'||actor.role==='GESTOR';const ownerId=canAssign&&body.ownerId?body.ownerId:actor.id;const [created]=await db.insert(leads).values({clientName,ownerId,phone:normalizePhone(body.phone),contactDate:body.contactDate,statusId:body.statusId,brokerId:body.brokerId||null,agencyId:body.agencyId||null,notes:normalizeText(body.notes)||null,nextContact:body.nextContact||null,source:'manual'}).returning();return NextResponse.json(created,{status:201})}
