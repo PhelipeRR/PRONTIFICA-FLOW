@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Sidebar, MobileNav } from "../components/sidebar";
+import { AppShell } from "../components/app-shell";
 
 export const metadata: Metadata = {
   title: {
@@ -15,4 +15,4 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) { return <html lang="pt-BR"><body><div className="min-h-screen"><MobileNav/><div className="flex min-h-screen"><Sidebar/><div className="min-w-0 flex-1">{children}</div></div></div></body></html>; }
+export default function RootLayout({ children }: { children: React.ReactNode }) { return <html lang="pt-BR"><body><AppShell>{children}</AppShell></body></html>; }
