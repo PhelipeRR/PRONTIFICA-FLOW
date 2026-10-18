@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { desc, eq, ilike, or } from "drizzle-orm";
+import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { db } from "../../../db";
 import { leads, leadStatuses } from "../../../db/schema";
 import { normalizePhone, normalizeText } from "../../../lib/normalization";
@@ -8,7 +8,10 @@ export async function GET(request: NextRequest) {
   if (!db) return NextResponse.json({ error: "Banco não configurado" }, { status: 503 });
   const query = request.nextUrl.searchParams.get("q")?.trim();
   const status = request.nextUrl.searchParams.get("status");
-  const rows = await db.select({ lead: leads, status: leadStatuses.name, color: leadStatuses.color }).from(leads).leftJoin(leadStatuses, eq(leads.statusId, leadStatuses.id)).where(query ? or(ilike(leads.clientName, `%${query}%`), ilike(leads.phone, `%${query}%`)) : status ? eq(leadStatuses.name, status) : undefined).orderBy(desc(leads.contactDate)).limit(100);
+  const from = request.nextUrl.searchParams.get("from");
+  const to = request.nextUrl.searchParams.get("to");
+  const filters = [query ? or(ilike(leads.clientName, `%${query}%`), ilike(leads.phone, `%${query}%`)) : undefined, status ? eq(leadStatuses.name, status) : undefined, from ? sql`${leads.contactDate} >= ${from}` : undefined, to ? sql`${leads.contactDate} <= ${to}` : undefined].filter(Boolean);
+  const rows = await db.select({ lead: leads, status: leadStatuses.name, color: leadStatuses.color }).from(leads).leftJoin(leadStatuses, eq(leads.statusId, leadStatuses.id)).where(filters.length ? and(...filters as any) : undefined).orderBy(desc(leads.contactDate)).limit(100);
   return NextResponse.json(rows);
 }
 
