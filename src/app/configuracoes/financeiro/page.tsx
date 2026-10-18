@@ -1,0 +1,2 @@
+import { SettingsSubpage } from "../../../components/settings-subpage";
+export default function Page(){return <SettingsSubpage title="Financeiro e faturamento" description="Competências, critérios e parâmetros financeiros da operação."><div className="rounded-2xl border bg-white p-6 shadow-sm"><p className="text-sm text-slate-500">Nenhuma regra financeira nova foi aplicada sem definição explícita do negócio.</p></div></SettingsSubpage>}

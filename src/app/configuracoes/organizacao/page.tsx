@@ -1,0 +1,2 @@
+import { SettingsSubpage } from "../../../components/settings-subpage";
+export default function Page(){return <SettingsSubpage title="Organização" description="Identidade e informações institucionais da operação."><div className="rounded-2xl border bg-white p-6 shadow-sm"><p className="text-sm text-slate-500">As informações institucionais serão persistidas nas configurações globais da organização.</p></div></SettingsSubpage>}

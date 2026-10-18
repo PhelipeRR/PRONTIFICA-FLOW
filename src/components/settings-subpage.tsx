@@ -1,0 +1,3 @@
+import Link from "next/link";
+import { SettingsNavigation } from "./settings-navigation";
+export function SettingsSubpage({title,description,children}:{title:string;description:string;children:React.ReactNode}){return <section className="p-4 sm:p-8"><p className="text-sm font-medium text-blue-600">Central administrativa</p><h1 className="mt-1 text-3xl font-bold">{title}</h1><p className="mt-2 text-sm text-slate-500">{description}</p><div className="mt-6"><SettingsNavigation/></div><div className="mt-6">{children}</div><Link href="/configuracoes" className="mt-6 inline-block text-sm font-medium text-blue-600">← Voltar para configurações</Link></section>}

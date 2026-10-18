@@ -1,0 +1,6 @@
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Building2, Bell, Database, LockKeyhole, Palette, Settings2, ShieldCheck, SlidersHorizontal, Users } from "lucide-react";
+const items=[['Organização','/configuracoes/organizacao',Building2],['Usuários e permissões','/configuracoes/usuarios',Users],['Funil de leads','/configuracoes/funil',SlidersHorizontal],['Gestão de negócios','/configuracoes/negocios',Settings2],['Financeiro e faturamento','/configuracoes/financeiro',Database],['Notificações','/configuracoes/notificacoes',Bell],['Segurança e auditoria','/configuracoes/seguranca',ShieldCheck],['Aparência e preferências','/configuracoes/aparencia',Palette],['Dados e importações','/configuracoes/dados',LockKeyhole]] as const;
+export function SettingsNavigation(){const pathname=usePathname();return <nav aria-label="Categorias de configurações" className="flex gap-2 overflow-x-auto rounded-xl border border-slate-200 bg-white p-2 shadow-sm">{items.map(([label,href,Icon])=><Link key={href} href={href} className={`flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm transition ${pathname===href?'bg-blue-600 font-medium text-white':'text-slate-600 hover:bg-slate-100'}`}><Icon size={16}/>{label}</Link>)}</nav>}

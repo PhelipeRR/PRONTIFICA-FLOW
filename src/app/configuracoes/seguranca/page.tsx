@@ -1,0 +1,2 @@
+import { SettingsSubpage } from "../../../components/settings-subpage";
+export default function Page(){return <SettingsSubpage title="Segurança e auditoria" description="Acompanhe eventos administrativos e sessões disponíveis."><div className="rounded-2xl border bg-white p-6 shadow-sm"><p className="text-sm text-slate-500">A auditoria será exibida somente com eventos persistidos no banco, sem inventar localização ou dispositivo.</p></div></SettingsSubpage>}

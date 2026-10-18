@@ -1,0 +1,2 @@
+import { SettingsSubpage } from "../../../components/settings-subpage";
+export default function Page(){return <SettingsSubpage title="Notificações" description="Preferências de alertas internos e por e-mail."><div className="rounded-2xl border bg-white p-6 shadow-sm"><p className="text-sm text-slate-500">O envio de e-mails depende de um serviço configurado no ambiente. Nenhum envio fictício é realizado.</p></div></SettingsSubpage>}

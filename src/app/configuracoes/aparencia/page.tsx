@@ -1,0 +1,2 @@
+import { SettingsSubpage } from "../../../components/settings-subpage";
+export default function Page(){return <SettingsSubpage title="Aparência e preferências" description="Tema, densidade, idioma e preferências pessoais."><div className="rounded-2xl border bg-white p-6 shadow-sm"><p className="text-sm text-slate-500">O idioma atual da aplicação é pt-BR. Preferências individuais serão vinculadas ao usuário autenticado.</p></div></SettingsSubpage>}
