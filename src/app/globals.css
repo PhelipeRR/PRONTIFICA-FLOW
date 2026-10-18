@@ -1,6 +1,7 @@
 @import "tailwindcss";
 :root { color-scheme: light; --primary: #2563eb; --primary-hover: #1d4ed8; --surface: #ffffff; --surface-muted: #f8fafc; --background: #f8fafc; --text-primary: #0f172a; --text-secondary: #64748b; --border: #e2e8f0; --shadow-card: 0 1px 2px rgb(15 23 42 / .04), 0 8px 24px rgb(15 23 42 / .04); }
 * { box-sizing: border-box; }
+:where(.border) { border-color: var(--border); }
 body { margin: 0; background: var(--background); color: var(--text-primary); font-family: Arial, sans-serif; }
 table { border-color: var(--border); }
 thead { border-color: var(--border) !important; background-color: color-mix(in srgb, var(--surface-muted) 88%, transparent) !important; }
@@ -9,6 +10,7 @@ tbody tr { border-color: var(--border); transition: background-color .15s ease; 
 tbody tr:hover { background-color: color-mix(in srgb, var(--primary) 4%, var(--surface)); }
 main, section { color: var(--text-primary); }
 .card, [data-card] { border-color: var(--border); background: var(--surface); box-shadow: var(--shadow-card); }
+.rounded-2xl.border, .rounded-xl.border { box-shadow: var(--shadow-card); }
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, opacity .15s ease, transform .15s ease; }
 button:active:not(:disabled) { transform: translateY(1px); }
