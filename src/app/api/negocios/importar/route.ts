@@ -5,7 +5,31 @@ import { db } from "../../../../db";
 import { businessDeals } from "../../../../db/schema";
 import { ensureBusinessSchema } from "../../../../db/ensure-business-schema";
 void ensureBusinessSchema();
-const clean=(v:unknown)=>String(v??"").trim();
-const cells=(v:unknown[])=>Array.from({length:v.length},(_,i)=>clean(v[i]));
-const money=(v:unknown)=>{const s=clean(v).replace(/R\$\s?/g,"").replace(/\./g,"").replace(",",".");const n=Number(s);return Number.isFinite(n)?n.toFixed(2):null};
-export async function POST(request:NextRequest){if(!db)return NextResponse.json({error:"Banco não configurado"},{status:503});try{const form=await request.formData();const file=form.get("file");if(!(file instanceof File))return NextResponse.json({error:"Envie um arquivo XLSX"},{status:400});const wb=new ExcelJS.Workbook();await wb.xlsx.load(Buffer.from(await file.arrayBuffer()) as never);let created=0,skipped=0;const errors:string[]=[];for(const ws of wb.worksheets){const name=clean(ws.name).toUpperCase();if(!["CAIXA","PRIVADOS","FATURADOS DO MÊS","FATURADOS ANTERIORES","DESISTIU & STANDBY"].some(x=>name.includes(x)))continue;let headerRow=1;for(let r=1;r<=Math.min(ws.rowCount,8);r++){const candidate=cells(ws.getRow(r).values as unknown[]).map(x=>x.toUpperCase());if(candidate.some(x=>x.includes("CLIENTE"))){headerRow=r;break}}const header=cells(ws.getRow(headerRow).values as unknown[]);for(let i=headerRow+1;i<=ws.rowCount;i++){const values=ws.getRow(i).values as unknown[];const get=(...keys:string[])=>{const idx=header.findIndex(h=>keys.some(k=>h.toUpperCase().includes(k)));return idx>=0?clean(values[idx]):""};const clientName=get("CLIENTE","NOME");if(!clientName){skipped++;continue}const cpf=get("CPF")||null;const existing=await db.select({id:businessDeals.id}).from(businessDeals).where(cpf?and(eq(businessDeals.clientName,clientName),eq(businessDeals.cpf,cpf)):eq(businessDeals.clientName,clientName)).limit(1);if(existing.length){skipped++;continue}try{await db.insert(businessDeals).values({clientName,cpf,bank:get("BANCO")||null,bankCategory:name.includes("CAIXA")?"CAIXA":"PRIVADOS",serviceOwner:get("ATENDIMENTO")||null,operationsOwner:get("OPERACIONAL")||null,propertyValue:money(get("IMÓVEL","VALOR DO IMÓVEL")),financingValue:money(get("FINANCIAMENTO","VALOR FINANCIADO")),financingLine:get("LINHA")||null,propertyType:get("TIPO DO IMÓVEL")||null,stage:get("ETAPA")||"FORMULÁRIO",situation:get("SITUAÇÃO")||"EM ANÁLISE",waitingFor:get("AGUARDANDO")||null,partner:get("PARCEIRO")||null,notes:get("INFORMAÇÕES")||null,portfolioState:name.includes("FATURADOS")?"FATURADO":name.includes("STANDBY")?"STANDBY":"ATIVO",source:ws.name,billingCompetence:get("COMPETÊNCIA")||null});created++}catch{errors.push(`${ws.name}:${i}`)}}}return NextResponse.json({created,skipped,errors});}catch(error){return NextResponse.json({error:error instanceof Error?error.message:"Falha ao processar a planilha"},{status:500})}}
+const clean = (v: unknown) => String(v ?? "").trim();
+const cells = (v: unknown[]) => Array.from({ length: v.length }, (_, i) => clean(v[i]));
+const money = (v: unknown) => { const s = clean(v).replace(/R$\s?/g, "").replace(/\./g, "").replace(",", "."); const n = Number(s); return Number.isFinite(n) ? n.toFixed(2) : null; };
+export async function POST(request: NextRequest) {
+  if (!db) return NextResponse.json({ error: "Banco não configurado" }, { status: 503 });
+  try {
+    const form = await request.formData(), file = form.get("file");
+    if (!(file instanceof File)) return NextResponse.json({ error: "Envie um arquivo XLSX" }, { status: 400 });
+    const wb = new ExcelJS.Workbook(); await wb.xlsx.load(Buffer.from(await file.arrayBuffer()) as never);
+    let created = 0, skipped = 0; const errors: string[] = [];
+    for (const ws of wb.worksheets) {
+      const name = clean(ws.name).toUpperCase();
+      const isApproval = name.includes("APROVA");
+      if (!isApproval && !["CAIXA", "PRIVADOS", "FATURADOS DO MÊS", "FATURADOS ANTERIORES", "DESISTIU & STANDBY"].some(x => name.includes(x))) continue;
+      let headerRow = 1;
+      for (let r = 1; r <= Math.min(ws.rowCount, 8); r++) { const candidate = cells(ws.getRow(r).values as unknown[]).map(x => x.toUpperCase()); if (candidate.some(x => x.includes("CLIENTE") || x.includes("NOME"))) { headerRow = r; break; } }
+      const header = cells(ws.getRow(headerRow).values as unknown[]);
+      for (let i = headerRow + 1; i <= ws.rowCount; i++) {
+        const values = ws.getRow(i).values as unknown[]; const get = (...keys: string[]) => { const idx = header.findIndex(h => keys.some(k => h.toUpperCase().includes(k))); return idx >= 0 ? clean(values[idx]) : ""; };
+        const clientName = get("CLIENTE", "NOME"); if (!clientName) { skipped++; continue; }
+        const cpf = get("CPF") || null; const existing = await db.select({ id: businessDeals.id }).from(businessDeals).where(cpf ? and(eq(businessDeals.clientName, clientName), eq(businessDeals.cpf, cpf)) : eq(businessDeals.clientName, clientName)).limit(1);
+        if (existing.length) { skipped++; continue; }
+        try { await db.insert(businessDeals).values({ clientName, cpf, bank: get("BANCO") || null, bankCategory: name.includes("CAIXA") ? "CAIXA" : "PRIVADOS", serviceOwner: get("ATENDIMENTO") || null, operationsOwner: get("OPERACIONAL") || null, propertyValue: money(get("IMÓVEL", "VALOR DO IMÓVEL")), financingValue: money(get("FINANCIAMENTO", "VALOR FINANCIADO")), financingLine: get("LINHA") || null, propertyType: get("TIPO DO IMÓVEL") || null, stage: isApproval ? "APROVAÇÃO" : get("ETAPA") || "FORMULÁRIO", situation: get("SITUAÇÃO") || "EM ANÁLISE", waitingFor: get("AGUARDANDO") || null, partner: get("PARCEIRO") || null, notes: get("INFORMAÇÕES") || null, portfolioState: isApproval ? "APROVACAO" : name.includes("FATURADOS") ? "FATURADO" : name.includes("STANDBY") ? "STANDBY" : "ATIVO", source: ws.name, billingCompetence: get("COMPETÊNCIA") || null }); created++; } catch { errors.push(`${ws.name}:${i}`); }
+      }
+    }
+    return NextResponse.json({ created, skipped, errors });
+  } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Falha ao processar a planilha" }, { status: 500 }); }
+}
