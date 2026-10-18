@@ -8,8 +8,8 @@ export async function GET(request: NextRequest) {
   if (!db) return NextResponse.json({ error: "Banco não configurado" }, { status: 503 });
   await ensureBusinessSchema();
   const p=request.nextUrl.searchParams;
-  const q=p.get("q"), state=p.get("state"), bank=p.get("bank"), category=p.get("category");
-  const where=[q?or(ilike(businessDeals.clientName,`%${q}%`),ilike(businessDeals.cpf,`%${q}%`),ilike(businessDeals.bank,`%${q}%`)):undefined,state?eq(businessDeals.portfolioState,state):undefined,bank?eq(businessDeals.bank,bank):undefined,category?eq(businessDeals.bankCategory,category):undefined].filter(Boolean);
+  const q=p.get("q"), state=p.get("state"), bank=p.get("bank"), category=p.get("category"), stage=p.get("stage"), situation=p.get("situation");
+  const where=[q?or(ilike(businessDeals.clientName,`%${q}%`),ilike(businessDeals.cpf,`%${q}%`),ilike(businessDeals.bank,`%${q}%`)):undefined,state?eq(businessDeals.portfolioState,state):undefined,bank?eq(businessDeals.bank,bank):undefined,category?eq(businessDeals.bankCategory,category):undefined,stage?eq(businessDeals.stage,stage):undefined,situation?eq(businessDeals.situation,situation):undefined].filter(Boolean);
   return NextResponse.json(await db.select().from(businessDeals).where(where.length?and(...where as any):undefined).orderBy(desc(businessDeals.updatedAt)).limit(200));
 }
 

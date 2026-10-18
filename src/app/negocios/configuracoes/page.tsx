@@ -30,7 +30,7 @@ export default function Page() {
     ]],
     ["Financeiro e controle", [
       { title: "Carteiras financeiras", description: "Acesse Caixa, bancos privados e faturamento.", href: "/negocios", icon: Banknote, note: "Abrir gestão financeira" },
-      { title: "Histórico de negócios", description: "Consulte os registros e o histórico operacional.", href: "/negocios/todos", icon: Archive, note: "Consultar negócios" },
+      { title: "Histórico administrativo", description: "Consulte alterações realizadas nas configurações da operação.", href: "/negocios/configuracoes/historico", icon: Archive, note: "Ver histórico" },
       { title: "Importação de dados", description: "Importe planilhas de negócios reconhecidas pelo sistema.", href: "/negocios/importar", icon: Settings2, note: "Importar planilha" },
     ]],
   ];
