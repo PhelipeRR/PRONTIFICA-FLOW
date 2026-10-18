@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import ExcelJS from "exceljs";
 import { and, eq } from "drizzle-orm";
-import { db } from "../../../../../db";
-import { businessDeals } from "../../../../../db/schema";
+import { db } from "../../../../db";
+import { businessDeals } from "../../../../db/schema";
 
 const clean=(v:unknown)=>String(v??"").trim();
 const money=(v:unknown)=>{const s=clean(v).replace(/R\$\s?/g,"").replace(/\./g,"").replace(",",".");const n=Number(s);return Number.isFinite(n)?n.toFixed(2):null};
