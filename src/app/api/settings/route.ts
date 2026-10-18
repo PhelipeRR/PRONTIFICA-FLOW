@@ -41,7 +41,8 @@ export async function PATCH(request: NextRequest) {
     if (!body.name?.trim() || !body.email?.trim()) return NextResponse.json({ error: "Nome e e-mail são obrigatórios" }, { status: 400 });
     if (!process.env.BETTER_AUTH_SECRET) return NextResponse.json({ error: "Autenticação não configurada" }, { status: 503 });
     const temporaryPassword = `Prontifica#${Math.random().toString(36).slice(2,8)}!`;
-    const response = await fetch(new URL("/api/auth/sign-up/email", request.url), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: body.name.trim(), email: body.email.trim().toLowerCase(), password: temporaryPassword }) });
+    const origin = request.headers.get("origin") || new URL(request.url).origin;
+    const response = await fetch(new URL("/api/auth/sign-up/email", request.url), { method: "POST", headers: { "content-type": "application/json", origin, referer: `${origin}/configuracoes/usuarios` }, body: JSON.stringify({ name: body.name.trim(), email: body.email.trim().toLowerCase(), password: temporaryPassword }) });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) return NextResponse.json({ error: result.message || result.error || "Não foi possível cadastrar o usuário" }, { status: response.status });
     const created = result.user;
