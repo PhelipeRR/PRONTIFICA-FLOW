@@ -1,2 +1,3 @@
 import { SettingsSubpage } from "../../../components/settings-subpage";
-export default function Page(){return <SettingsSubpage title="Aparência e preferências" description="Tema, densidade, idioma e preferências pessoais."><div className="rounded-2xl border bg-white p-6 shadow-sm"><p className="text-sm text-slate-500">O idioma atual da aplicação é pt-BR. Preferências individuais serão vinculadas ao usuário autenticado.</p></div></SettingsSubpage>}
+import { OperationalSettingsForm } from "../../../components/operational-settings-form";
+export default function Page(){return <SettingsSubpage title="Aparência e preferências" description="Preferências da experiência administrativa."><OperationalSettingsForm fields={[{key:"appearance_density",label:"Densidade das tabelas",description:"Defina o espaçamento padrão das listagens."},{key:"appearance_language",label:"Idioma",description:"Idioma principal da operação."}]}/></SettingsSubpage>}
