@@ -8,6 +8,13 @@
       "when": 1792344984966,
       "tag": "0000_add_operational_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792346540407,
+      "tag": "0001_add_business_deals",
+      "breakpoints": true
     }
   ]
 }
