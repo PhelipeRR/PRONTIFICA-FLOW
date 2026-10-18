@@ -20,6 +20,6 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const clientName = normalizeText(body.clientName);
   if (!clientName || !body.contactDate || !body.statusId) return NextResponse.json({ error: "Nome, data e status são obrigatórios" }, { status: 400 });
-  const [created] = await db.insert(leads).values({ clientName, phone: normalizePhone(body.phone), contactDate: body.contactDate, statusId: body.statusId, notes: normalizeText(body.notes) || null, source: "manual" }).returning();
+  const [created] = await db.insert(leads).values({ clientName, phone: normalizePhone(body.phone), contactDate: body.contactDate, statusId: body.statusId, brokerId: body.brokerId || null, agencyId: body.agencyId || null, notes: normalizeText(body.notes) || null, nextContact: body.nextContact || null, source: "manual" }).returning();
   return NextResponse.json(created, { status: 201 });
 }
