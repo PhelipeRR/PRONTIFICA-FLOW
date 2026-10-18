@@ -43,3 +43,12 @@ export async function PUT(request: NextRequest) {
   const [row] = await db!.update(businessCatalogs).set({ name: body.name.trim(), description: body.description?.trim() || null, color: body.color || null, sortOrder: Number(body.sortOrder || 0), active: body.active !== false, updatedAt: new Date() }).where(eq(businessCatalogs.id, body.id)).returning();
   return row ? NextResponse.json(row) : NextResponse.json({ error: "Registro não encontrado." }, { status: 404 });
 }
+
+export async function DELETE(request: NextRequest) {
+  if (!await admin(request)) return NextResponse.json({ error: "Apenas administradores podem alterar configurações." }, { status: 403 });
+  await ensure();
+  const id = request.nextUrl.searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "Registro inválido." }, { status: 400 });
+  const [row] = await db!.update(businessCatalogs).set({ active: false, updatedAt: new Date() }).where(eq(businessCatalogs.id, id)).returning();
+  return row ? NextResponse.json(row) : NextResponse.json({ error: "Registro não encontrado." }, { status: 404 });
+}
