@@ -1,7 +1,7 @@
 {
   "name": "prontifica-flow",
   "private": true,
-  "scripts": {"dev":"next dev","build":"next build --webpack","start":"next start","lint":"next lint","typecheck":"tsc --noEmit","test":"vitest run"},
+  "scripts": {"dev":"next dev","build":"next build --webpack","start":"next start","lint":"next lint","typecheck":"tsc --noEmit","test":"vitest run","db:seed":"node scripts/seed-statuses.mjs"},
   "dependencies": {"@neondatabase/serverless":"latest","@tanstack/react-table":"latest","better-auth":"latest","date-fns":"latest","drizzle-orm":"latest","exceljs":"latest","lucide-react":"latest","next":"latest","next-themes":"latest","react":"latest","react-dom":"latest","recharts":"latest","sonner":"latest","zod":"latest","@tailwindcss/postcss":"latest"},
   "devDependencies": {"@types/node":"latest","@types/react":"latest","@types/react-dom":"latest","autoprefixer":"latest","postcss":"latest","tailwindcss":"latest","typescript":"latest","vitest":"latest","drizzle-kit":"latest"}
 }
