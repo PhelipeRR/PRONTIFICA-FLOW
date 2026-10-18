@@ -21,4 +21,6 @@ O projeto usa `DATABASE_URL` para consultas do Neon e `DIRECT_DATABASE_URL` para
 
 Para preparar o banco: `npx drizzle-kit push`. Para inserir os status padrão: `npm run db:seed`. O login está em `/login`; o primeiro usuário administrador deve ser criado por procedimento controlado da organização antes de liberar o ambiente, sem cadastro público de administradores.
 
+Para criar o primeiro administrador, execute `ADMIN_EMAIL=... ADMIN_NAME=... ADMIN_PASSWORD=... DATABASE_URL=... npm run auth:create-admin` em ambiente seguro. O script usa o hash de senha do Better Auth e não deve ser executado com a senha em logs públicos.
+
 Rotas funcionais: `/api/health`, `/api/leads`, `/api/import`, `/api/follow-ups`, `/api/reports/leads`, `/api/auth/*`, `/api/brokers` e `/api/agencies`.

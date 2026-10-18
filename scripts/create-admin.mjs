@@ -1,0 +1,11 @@
+import { randomUUID } from "node:crypto";
+import { neon } from "@neondatabase/serverless";
+import { hashPassword } from "better-auth/crypto";
+const { ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD, DATABASE_URL } = process.env;
+if (!DATABASE_URL || !ADMIN_EMAIL || !ADMIN_NAME || !ADMIN_PASSWORD) throw new Error("Defina DATABASE_URL, ADMIN_EMAIL, ADMIN_NAME e ADMIN_PASSWORD");
+const sql=neon(DATABASE_URL); const now=new Date(); const id=randomUUID();
+const hash=await hashPassword(ADMIN_PASSWORD);
+await sql`insert into "user" (id,name,email,email_verified,created_at,updated_at) values (${id},${ADMIN_NAME},${ADMIN_EMAIL},true,${now},${now}) on conflict (email) do nothing`;
+const rows=await sql`select id from "user" where email=${ADMIN_EMAIL}`; const userId=rows[0].id;
+await sql`insert into account (id,account_id,provider_id,user_id,password,created_at,updated_at) values (${randomUUID()},${userId},'credential',${userId},${hash},${now},${now}) on conflict do nothing`;
+console.log("Administrador criado ou já existente:",ADMIN_EMAIL);
