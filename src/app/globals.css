@@ -8,6 +8,8 @@ thead { border-color: var(--border) !important; background-color: color-mix(in s
 tbody { border-color: var(--border); }
 tbody tr { border-color: var(--border); transition: background-color .15s ease; }
 tbody tr:hover { background-color: color-mix(in srgb, var(--primary) 4%, var(--surface)); }
+table td:last-child { white-space: nowrap; }
+table td:last-child button { display: inline-flex; vertical-align: middle; }
 main, section { color: var(--text-primary); }
 .card, [data-card] { border-color: var(--border); background: var(--surface); box-shadow: var(--shadow-card); }
 .rounded-2xl.border, .rounded-xl.border { box-shadow: var(--shadow-card); }
