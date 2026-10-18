@@ -1,2 +1,3 @@
-import { PlaceholderPage } from "../placeholder-page";
-export default function Page() { return <PlaceholderPage title="Imobiliárias" description="Gerencie imobiliárias e seus relacionamentos." />; }
+"use client";
+import {useEffect,useState} from "react";
+export default function Page(){const [rows,setRows]=useState<any[]>([]);useEffect(()=>{fetch("/api/agencies").then(r=>r.json()).then(setRows)},[]);return <section className="p-8"><h1 className="text-3xl font-bold">Imobiliárias</h1><div className="mt-8 overflow-hidden rounded-xl border bg-white"><table className="w-full text-left text-sm"><thead className="border-b bg-slate-50"><tr><th className="p-4">Nome</th><th className="p-4">Telefone</th><th className="p-4">E-mail</th></tr></thead><tbody>{rows.map(r=><tr className="border-b" key={r.id}><td className="p-4">{r.name}</td><td className="p-4">{r.phone??"—"}</td><td className="p-4">{r.email??"—"}</td></tr>)}</tbody></table>{!rows.length&&<p className="p-6 text-slate-500">Nenhuma imobiliária cadastrada.</p>}</div></section>}

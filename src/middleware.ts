@@ -1,0 +1,3 @@
+import { NextRequest, NextResponse } from "next/server";
+export function middleware(request: NextRequest){const path=request.nextUrl.pathname;if(path==="/login"||path.startsWith("/api/auth")||path.startsWith("/api/health")||path.startsWith("/_next"))return NextResponse.next();const hasSession=request.cookies.has("better-auth.session_token")||request.cookies.has("__Secure-better-auth.session_token");if(!hasSession&&!path.startsWith("/api/"))return NextResponse.redirect(new URL("/login",request.url));if(!hasSession&&path.startsWith("/api/"))return NextResponse.json({error:"Não autenticado"},{status:401});return NextResponse.next();}
+export const config={matcher:["/((?!favicon.ico).*)"]};
