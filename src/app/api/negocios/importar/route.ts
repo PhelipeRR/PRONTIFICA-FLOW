@@ -3,6 +3,8 @@ import ExcelJS from "exceljs";
 import { and, eq } from "drizzle-orm";
 import { db } from "../../../../db";
 import { businessDeals } from "../../../../db/schema";
+import { ensureBusinessSchema } from "../../../../db/ensure-business-schema";
+void ensureBusinessSchema();
 const clean=(v:unknown)=>String(v??"").trim();
 const cells=(v:unknown[])=>Array.from({length:v.length},(_,i)=>clean(v[i]));
 const money=(v:unknown)=>{const s=clean(v).replace(/R\$\s?/g,"").replace(/\./g,"").replace(",",".");const n=Number(s);return Number.isFinite(n)?n.toFixed(2):null};
