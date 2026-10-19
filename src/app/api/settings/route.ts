@@ -35,7 +35,9 @@ export async function PATCH(request: NextRequest) {
   }
   if (body.type === "user") {
     if (!body.id || !body.name?.trim()) return NextResponse.json({ error: "Usuário inválido" }, { status: 400 });
-    const [row] = await db.update(user).set({ name: body.name.trim(), role: body.role || "OPERADOR", updatedAt: new Date() }).where(eq(user.id, body.id)).returning({ id: user.id, name: user.name, email: user.email, role: user.role });
+    const email = body.email?.trim().toLowerCase();
+    if (email) { const [duplicate] = await db.select({ id: user.id }).from(user).where(eq(user.email, email)).limit(1); if (duplicate && duplicate.id !== body.id) return NextResponse.json({ error: "Este e-mail já está cadastrado." }, { status: 409 }); }
+    const [row] = await db.update(user).set({ name: body.name.trim(), email: email || undefined, role: body.role || "OPERADOR", updatedAt: new Date() }).where(eq(user.id, body.id)).returning({ id: user.id, name: user.name, email: user.email, role: user.role });
     return row ? NextResponse.json(row) : NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
   }
   if (body.type === "resetPassword") {
