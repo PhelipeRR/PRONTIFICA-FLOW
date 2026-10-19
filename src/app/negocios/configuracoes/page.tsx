@@ -2,18 +2,20 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Archive, ArrowRight, Banknote, BarChart3, Building2, ClipboardCheck, FileText, Landmark, Search, Settings2, Users } from "lucide-react";
 
 type Deal = { bank?: string; serviceOwner?: string; operationsOwner?: string; stage?: string; situation?: string; bankCategory?: string };
 type Item = { title: string; description: string; href: string; icon: typeof Landmark; count?: number; note?: string };
 
 export default function Page() {
+  const router = useRouter();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => { fetch("/api/negocios").then(async response => { const data = await response.json(); if (!response.ok) throw new Error(data.error || "Não foi possível carregar os indicadores."); setDeals(Array.isArray(data) ? data : []); }).catch(error => setError(error instanceof Error ? error.message : "Não foi possível carregar os indicadores.")).finally(() => setLoading(false)); }, []);
+  useEffect(() => { fetch("/api/account/me").then(response => response.ok ? response.json() : null).then(me => { if (me && me.role !== "ADMINISTRADOR" && me.role !== "GESTOR") router.replace("/negocios"); }).catch(() => router.replace("/negocios")); fetch("/api/negocios").then(async response => { const data = await response.json(); if (!response.ok) throw new Error(data.error || "Não foi possível carregar os indicadores."); setDeals(Array.isArray(data) ? data : []); }).catch(error => setError(error instanceof Error ? error.message : "Não foi possível carregar os indicadores.")).finally(() => setLoading(false)); }, [router]);
 
   const stats = useMemo(() => ({ banks: new Set(deals.map(item => item.bank).filter(Boolean)).size, service: new Set(deals.map(item => item.serviceOwner).filter(Boolean)).size, operations: new Set(deals.map(item => item.operationsOwner).filter(Boolean)).size, stages: new Set(deals.map(item => item.stage).filter(Boolean)).size, situations: new Set(deals.map(item => item.situation).filter(Boolean)).size }), [deals]);
   const sections: [string, Item[]][] = [
