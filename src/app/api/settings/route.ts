@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { asc, eq, sql } from "drizzle-orm";
 import { db } from "../../../db";
-import { leadStatuses, operationalSettings, user } from "../../../db/schema";
+import { account, leadStatuses, operationalSettings, user } from "../../../db/schema";
+import { hashPassword } from "@better-auth/utils/password";
 
 export async function GET() {
   if (!db) return NextResponse.json({ error: "Banco não configurado" }, { status: 503 });
@@ -36,6 +37,20 @@ export async function PATCH(request: NextRequest) {
     if (!body.id || !body.name?.trim()) return NextResponse.json({ error: "Usuário inválido" }, { status: 400 });
     const [row] = await db.update(user).set({ name: body.name.trim(), role: body.role || "OPERADOR", updatedAt: new Date() }).where(eq(user.id, body.id)).returning({ id: user.id, name: user.name, email: user.email, role: user.role });
     return row ? NextResponse.json(row) : NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
+  }
+  if (body.type === "resetPassword") {
+    if (!body.id) return NextResponse.json({ error: "Usuário inválido" }, { status: 400 });
+    const temporaryPassword = `Prontifica#${Math.random().toString(36).slice(2, 8)}!`;
+    const password = await hashPassword(temporaryPassword);
+    const [row] = await db.update(account).set({ password, updatedAt: new Date() }).where(eq(account.userId, body.id)).returning({ id: account.id });
+    if (!row) return NextResponse.json({ error: "Conta de acesso não encontrada" }, { status: 404 });
+    await db.update(user).set({ mustChangePassword: true, updatedAt: new Date() }).where(eq(user.id, body.id));
+    return NextResponse.json({ temporaryPassword });
+  }
+  if (body.type === "deleteUser") {
+    if (!body.id) return NextResponse.json({ error: "Usuário inválido" }, { status: 400 });
+    await db.delete(user).where(eq(user.id, body.id));
+    return NextResponse.json({ ok: true });
   }
   if (body.type === "createUser") {
     if (!body.name?.trim() || !body.email?.trim()) return NextResponse.json({ error: "Nome e e-mail são obrigatórios" }, { status: 400 });
