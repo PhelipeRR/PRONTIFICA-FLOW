@@ -27,6 +27,7 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):focus, sele
 input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); width: 1rem; height: 1rem; }
 input[type="color"] { min-height: 2.65rem; border-radius: .65rem; }
 button:disabled { cursor: not-allowed; }
+input:disabled, select:disabled, textarea:disabled { cursor: not-allowed; background-color: #f1f5f9 !important; border-color: #e2e8f0 !important; color: #64748b !important; opacity: .82; box-shadow: none !important; }
 aside button, aside button span { white-space: nowrap; }
 .text-slate-500, .text-slate-400 { color: var(--text-secondary) !important; }
 .bg-white { background-color: var(--surface) !important; }
