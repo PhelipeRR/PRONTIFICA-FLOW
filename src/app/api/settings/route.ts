@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { asc, eq, sql } from "drizzle-orm";
 import { db } from "../../../db";
-import { account, leadStatuses, operationalSettings, user } from "../../../db/schema";
+import { account, leadStatuses, operationalSettings, session, user } from "../../../db/schema";
 import { hashPassword } from "@better-auth/utils/password";
 
 export async function GET() {
@@ -49,6 +49,8 @@ export async function PATCH(request: NextRequest) {
   }
   if (body.type === "deleteUser") {
     if (!body.id) return NextResponse.json({ error: "Usuário inválido" }, { status: 400 });
+    await db.delete(session).where(eq(session.userId, body.id));
+    await db.delete(account).where(eq(account.userId, body.id));
     await db.delete(user).where(eq(user.id, body.id));
     return NextResponse.json({ ok: true });
   }
