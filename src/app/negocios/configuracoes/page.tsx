@@ -18,14 +18,14 @@ export default function Page() {
   const stats = useMemo(() => ({ banks: new Set(deals.map(item => item.bank).filter(Boolean)).size, service: new Set(deals.map(item => item.serviceOwner).filter(Boolean)).size, operations: new Set(deals.map(item => item.operationsOwner).filter(Boolean)).size, stages: new Set(deals.map(item => item.stage).filter(Boolean)).size, situations: new Set(deals.map(item => item.situation).filter(Boolean)).size }), [deals]);
   const sections: [string, Item[]][] = [
     ["Cadastros e responsáveis", [
-      { title: "Bancos", description: "Instituições financeiras utilizadas nas operações.", href: "/negocios/configuracoes/catalogos", icon: Landmark, count: stats.banks, note: "bancos identificados" },
-      { title: "Responsáveis de atendimento", description: "Profissionais comerciais atribuídos aos negócios.", href: "/negocios/configuracoes/catalogos", icon: Users, count: stats.service, note: "responsáveis identificados" },
-      { title: "Responsáveis operacionais", description: "Equipe responsável pelo andamento operacional.", href: "/negocios/configuracoes/catalogos", icon: Users, count: stats.operations, note: "responsáveis identificados" },
-      { title: "Parceiros", description: "Corretores e imobiliárias relacionados à operação.", href: "/corretores", icon: Building2 },
+      { title: "Bancos", description: "Instituições financeiras utilizadas nas operações.", href: "/negocios/configuracoes/catalogos?category=Bancos", icon: Landmark, count: stats.banks, note: "bancos identificados" },
+      { title: "Responsáveis de atendimento", description: "Profissionais comerciais atribuídos aos negócios.", href: "/negocios/configuracoes/catalogos?category=Responsáveis%20de%20atendimento", icon: Users, count: stats.service, note: "responsáveis identificados" },
+      { title: "Responsáveis operacionais", description: "Equipe responsável pelo andamento operacional.", href: "/negocios/configuracoes/catalogos?category=Responsáveis%20operacionais", icon: Users, count: stats.operations, note: "responsáveis identificados" },
+      { title: "Parceiros", description: "Corretores e imobiliárias relacionados à operação.", href: "/negocios/configuracoes/catalogos?category=Parceiros", icon: Building2 },
     ]],
     ["Fluxo operacional", [
-      { title: "Etapas", description: "Etapas presentes no fluxo atual de financiamento.", href: "/negocios/configuracoes/catalogos", icon: BarChart3, count: stats.stages, note: "etapas em uso" },
-      { title: "Situações", description: "Situações operacionais utilizadas nos negócios.", href: "/negocios/configuracoes/catalogos", icon: FileText, count: stats.situations, note: "situações em uso" },
+      { title: "Etapas", description: "Etapas presentes no fluxo atual de financiamento.", href: "/negocios/configuracoes/catalogos?category=Etapas", icon: BarChart3, count: stats.stages, note: "etapas em uso" },
+      { title: "Situações", description: "Situações operacionais utilizadas nos negócios.", href: "/negocios/configuracoes/catalogos?category=Situações", icon: FileText, count: stats.situations, note: "situações em uso" },
       { title: "Parâmetros de auditoria", description: "Pendências e inconsistências encontradas nos cadastros.", href: "/negocios/auditoria", icon: ClipboardCheck, note: "Abrir auditoria" },
     ]],
     ["Financeiro e controle", [
