@@ -4,12 +4,15 @@ import { and, eq } from "drizzle-orm";
 import { db } from "../../../../db";
 import { businessDeals } from "../../../../db/schema";
 import { ensureBusinessSchema } from "../../../../db/ensure-business-schema";
-void ensureBusinessSchema();
+import { getActor, unauthorized } from "../../../../lib/current-user";
 const clean = (v: unknown) => String(v ?? "").trim();
 const cells = (v: unknown[]) => Array.from({ length: v.length }, (_, i) => clean(v[i]));
 const money = (v: unknown) => { const s = clean(v).replace(/R$\s?/g, "").replace(/\./g, "").replace(",", "."); const n = Number(s); return Number.isFinite(n) ? n.toFixed(2) : null; };
 export async function POST(request: NextRequest) {
   if (!db) return NextResponse.json({ error: "Banco não configurado" }, { status: 503 });
+  const actor = await getActor(request);
+  if (!actor) return unauthorized();
+  await ensureBusinessSchema();
   try {
     const form = await request.formData(), file = form.get("file");
     if (!(file instanceof File)) return NextResponse.json({ error: "Envie um arquivo XLSX" }, { status: 400 });
@@ -25,9 +28,9 @@ export async function POST(request: NextRequest) {
       for (let i = headerRow + 1; i <= ws.rowCount; i++) {
         const values = ws.getRow(i).values as unknown[]; const get = (...keys: string[]) => { const idx = header.findIndex(h => keys.some(k => h.toUpperCase().includes(k))); return idx >= 0 ? clean(values[idx]) : ""; };
         const clientName = get("CLIENTE", "NOME"); if (!clientName) { skipped++; continue; }
-        const cpf = get("CPF") || null; const existing = await db.select({ id: businessDeals.id }).from(businessDeals).where(cpf ? and(eq(businessDeals.clientName, clientName), eq(businessDeals.cpf, cpf)) : eq(businessDeals.clientName, clientName)).limit(1);
+        const cpf = get("CPF") || null; const existing = await db.select({ id: businessDeals.id }).from(businessDeals).where(and(eq(businessDeals.ownerId, actor.id), eq(businessDeals.clientName, clientName), cpf ? eq(businessDeals.cpf, cpf) : undefined)).limit(1);
         if (existing.length) { skipped++; continue; }
-        try { await db.insert(businessDeals).values({ clientName, cpf, bank: get("BANCO") || null, bankCategory: name.includes("CAIXA") ? "CAIXA" : "PRIVADOS", serviceOwner: get("ATENDIMENTO") || null, operationsOwner: get("OPERACIONAL") || null, propertyValue: money(get("IMÓVEL", "VALOR DO IMÓVEL")), financingValue: money(get("FINANCIAMENTO", "VALOR FINANCIADO")), financingLine: get("LINHA") || null, propertyType: get("TIPO DO IMÓVEL") || null, stage: isApproval ? "APROVAÇÃO" : get("ETAPA") || "FORMULÁRIO", situation: get("SITUAÇÃO") || "EM ANÁLISE", waitingFor: get("AGUARDANDO") || null, partner: get("PARCEIRO") || null, notes: get("INFORMAÇÕES") || null, portfolioState: isApproval ? "APROVACAO" : name.includes("FATURADOS") ? "FATURADO" : name.includes("STANDBY") ? "STANDBY" : "ATIVO", source: ws.name, billingCompetence: get("COMPETÊNCIA") || null }); created++; } catch { errors.push(`${ws.name}:${i}`); }
+        try { await db.insert(businessDeals).values({ clientName, ownerId: actor.id, cpf, bank: get("BANCO") || null, bankCategory: name.includes("CAIXA") ? "CAIXA" : "PRIVADOS", serviceOwner: get("ATENDIMENTO") || null, operationsOwner: get("OPERACIONAL") || null, propertyValue: money(get("IMÓVEL", "VALOR DO IMÓVEL")), financingValue: money(get("FINANCIAMENTO", "VALOR FINANCIADO")), financingLine: get("LINHA") || null, propertyType: get("TIPO DO IMÓVEL") || null, stage: isApproval ? "APROVAÇÃO" : get("ETAPA") || "FORMULÁRIO", situation: get("SITUAÇÃO") || "EM ANÁLISE", waitingFor: get("AGUARDANDO") || null, partner: get("PARCEIRO") || null, notes: get("INFORMAÇÕES") || null, portfolioState: isApproval ? "APROVACAO" : name.includes("FATURADOS") ? "FATURADO" : name.includes("STANDBY") ? "STANDBY" : "ATIVO", source: ws.name, billingCompetence: get("COMPETÊNCIA") || null }); created++; } catch { errors.push(`${ws.name}:${i}`); }
       }
     }
     return NextResponse.json({ created, skipped, errors });

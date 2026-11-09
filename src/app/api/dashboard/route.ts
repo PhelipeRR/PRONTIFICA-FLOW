@@ -1,18 +1,15 @@
 import { NextResponse } from "next/server";
 import { and, count, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "../../../db";
-import { agencies, brokers, followUps, leadStatuses, leads, user } from "../../../db/schema";
-import { auth } from "../../../lib/auth";
+import { agencies, brokers, followUps, leadStatuses, leads } from "../../../db/schema";
+import { getActor, unauthorized } from "../../../lib/current-user";
 
 export async function GET(request: Request) {
-  if (!db || !auth) return NextResponse.json({ error: "Banco não configurado" }, { status: 503 });
-  const session = await auth.api.getSession({ headers: request.headers });
-  if (!session?.user) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
-  const [actor] = await db.select({ id: user.id, role: user.role }).from(user).where(eq(user.id, session.user.id)).limit(1);
-  if (!actor) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 401 });
+  if (!db) return NextResponse.json({ error: "Banco não configurado" }, { status: 503 });
+  const actor = await getActor(request);
+  if (!actor) return unauthorized();
   const params = new URL(request.url).searchParams, from = params.get("from"), to = params.get("to");
-  const canSeeAll = actor.role === "ADMINISTRADOR" || actor.role === "GESTOR";
-  const ownerFilter = canSeeAll ? undefined : eq(leads.ownerId, actor.id);
+  const ownerFilter = eq(leads.ownerId, actor.id);
   const period = and(ownerFilter, from ? gte(leads.contactDate, from) : undefined, to ? lte(leads.contactDate, to) : undefined);
   const [total, sent, converted, pending, statuses, monthly, brokerRanking, agencyRanking] = await Promise.all([
     db.select({ value: count() }).from(leads).where(period),

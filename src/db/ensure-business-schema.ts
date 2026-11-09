@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { db } from "./index";
+import { firstAdminId } from "./ensure-lead-owner";
 
 const catalogSeed: Record<string, string[]> = {
   Bancos: ["CAIXA", "CREDIPRONTO", "INTER", "BRADESCO", "SANTANDER", "BRB"],
@@ -11,6 +12,9 @@ const catalogSeed: Record<string, string[]> = {
 export async function ensureBusinessSchema() {
   if (!db) return;
   await db.execute(sql`CREATE TABLE IF NOT EXISTS business_deals (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), lead_id uuid, client_name text NOT NULL, cpf text, bank text, bank_category text NOT NULL DEFAULT 'PRIVADOS', partner text, broker_id uuid, agency_id uuid, service_owner text, operations_owner text, property_value numeric(14,2), financing_value numeric(14,2), financing_line text, property_type text, iq text, fgts text, partner_percentage numeric(7,4), billable boolean, stage text NOT NULL DEFAULT 'FORMULÁRIO', situation text NOT NULL DEFAULT 'EM ANÁLISE', waiting_for text, notes text, signature_date date, deed_date date, registration_date date, last_situation_change timestamp NOT NULL DEFAULT now(), billing_competence text, billing_order integer, billing_status text, portfolio_state text NOT NULL DEFAULT 'ATIVO', source text, created_at timestamp NOT NULL DEFAULT now(), updated_at timestamp NOT NULL DEFAULT now())`);
+  await db.execute(sql`ALTER TABLE business_deals ADD COLUMN IF NOT EXISTS owner_id text REFERENCES "user"(id)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS business_deals_owner_idx ON business_deals (owner_id)`);
+  await db.execute(sql`UPDATE business_deals SET owner_id = ${firstAdminId} WHERE owner_id IS NULL`);
   await db.execute(sql`CREATE TABLE IF NOT EXISTS deal_history (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), deal_id uuid NOT NULL REFERENCES business_deals(id), event_type text NOT NULL, field text, previous_value text, new_value text, changed_by text, note text, created_at timestamp NOT NULL DEFAULT now())`);
   await db.execute(sql`CREATE TABLE IF NOT EXISTS business_catalogs (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), category text NOT NULL, name text NOT NULL, description text, color text, sort_order integer NOT NULL DEFAULT 0, active boolean NOT NULL DEFAULT true, created_at timestamp NOT NULL DEFAULT now(), updated_at timestamp NOT NULL DEFAULT now())`);
   for (const [category, names] of Object.entries(catalogSeed)) for (const [sortOrder, name] of names.entries()) await db.execute(sql`INSERT INTO business_catalogs (category, name, sort_order) SELECT ${category}, ${name}, ${sortOrder} WHERE NOT EXISTS (SELECT 1 FROM business_catalogs WHERE category = ${category} AND lower(name) = lower(${name}))`);
