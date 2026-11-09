@@ -1,10 +1,12 @@
 "use client";
 import Link from "next/link";
 import { DragEvent, FormEvent, useRef, useState } from "react";
-import { CheckCircle2, FileSpreadsheet, Lock, TriangleAlert, UploadCloud, X } from "lucide-react";
+import { CheckCircle2, Download, FileSpreadsheet, Lock, TriangleAlert, UploadCloud, X } from "lucide-react";
 import { LoadingLabel } from "../../components/action-feedback";
 
 type Result = { ok: true; imported: number; skipped: number } | { ok: false; error: string };
+
+const TEMPLATE_URL = "/modelos/modelo-controle-leads.xlsx";
 
 const columns = [["A", "Data do contato"], ["B", "Cliente"], ["C", "Telefone"], ["D", "Corretor"], ["E", "Imobiliária"], ["F", "Status"], ["G", "Observações"]] as const;
 
@@ -35,9 +37,14 @@ export default function Page() {
   }
 
   return <section className="p-4 sm:p-8">
-    <p className="text-sm font-medium text-blue-600">Gestão comercial</p>
-    <h1 className="mt-1 text-3xl font-bold">Importar Excel</h1>
-    <p className="mt-2 text-sm text-slate-500">Traga sua planilha de leads para o sistema em poucos segundos.</p>
+    <div className="flex max-w-6xl flex-wrap items-end justify-between gap-4">
+      <div>
+        <p className="text-sm font-medium text-blue-600">Gestão comercial</p>
+        <h1 className="mt-1 text-3xl font-bold">Importar Excel</h1>
+        <p className="mt-2 text-sm text-slate-500">Traga sua planilha de leads para o sistema em poucos segundos.</p>
+      </div>
+      <a href={TEMPLATE_URL} download="Modelo - Controle de Leads.xlsx" className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:border-blue-400 hover:text-blue-700"><Download size={17} />Baixar planilha modelo</a>
+    </div>
 
     <div className="mt-8 grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
       <form onSubmit={submit} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -85,6 +92,8 @@ export default function Page() {
           <p className="mt-1 text-xs text-slate-500">Mesma ordem da planilha padrão, com o cabeçalho no topo da aba.</p>
           <ul className="mt-4 space-y-2">{columns.map(([col, label]) => <li key={col} className="flex items-center gap-3 text-sm text-slate-700"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-xs font-semibold text-slate-600">{col}</span>{label}</li>)}</ul>
           <p className="mt-4 text-xs leading-relaxed text-slate-500">Linhas sem data ou sem nome do cliente são ignoradas. Linhas já importadas por você não são duplicadas.</p>
+          <a href={TEMPLATE_URL} download="Modelo - Controle de Leads.xlsx" className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-700 hover:bg-blue-100"><Download size={16} />Baixar modelo em branco</a>
+          <p className="mt-2 text-center text-xs text-slate-500">Já vem com as abas, os status e o dashboard prontos.</p>
         </div>
         <div className="flex gap-3 rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-600 shadow-sm">
           <Lock size={18} className="mt-0.5 shrink-0 text-slate-400" />
